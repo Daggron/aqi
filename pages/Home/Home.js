@@ -6,8 +6,8 @@ import {
   StatusBar,
   Dimensions,
   TextInput,
-  Text,
   Button,
+  Text,
 } from 'react-native';
 import {DarkTheme} from '@react-navigation/native';
 import GetTime from '../util/Time';
@@ -24,7 +24,14 @@ const Home = () => {
       let data = await Axios.get(
         `https://api.waqi.info/feed/${location}/?token=15058dc7ed478310e48d69a5c7d89f96d69c3a1f`,
       );
-      setRes(data.data.data.aqi);
+      if (data.data.data.aqi) {
+        setRes(data.data.data.aqi);
+        setErr(null);
+      } else {
+        setErr(
+          `Can't find the air quality of ${location} city. Try a different name`,
+        );
+      }
       setPartciles([{...data.data.data.iaqi}]);
       console.log({...data.data.data.iaqi});
     } catch (error) {
@@ -38,10 +45,8 @@ const Home = () => {
   };
 
   const renderDetails = () => {
-    return(
-      <Details  aqi={res}/>
-    )
-  }
+    return <Details aqi={res} />;
+  };
 
   return (
     <View style={stylesheet.container}>
@@ -66,7 +71,20 @@ const Home = () => {
         color={GetTime() > 18 || GetTime() < 7 ? 'white' : 'black'}
         style={stylesheet.button}
       />
-      {res ? renderDetails(): <React.Fragment />}
+      {res && !err ? renderDetails() : <React.Fragment />}
+      {err ? (
+        <Text
+          style={{
+            color:
+              GetTime() > 18 || GetTime() < 7
+                ? DarkTheme.colors.text
+                : DarkTheme.colors.border,
+          }}>
+          {err}
+        </Text>
+      ) : (
+        <React.Fragment />
+      )}
     </View>
   );
 };
